@@ -1,9 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
   const grid = document.querySelector(".grid")
   const squares = Array.from(document.querySelectorAll(".grid div"))
-  const ScoreDisplay = document.querySelector("#score")
+  const scoreDisplay = document.querySelector("#score")
   const startButton = document.querySelector("#start")
   const width = 10;
+  let score = 0
   const lTetrimino = [
     [1, width+1, width*2+1, 2],
     [width, width+1, width+2, width*2+2],
@@ -69,8 +70,9 @@ document.addEventListener("DOMContentLoaded", () => {
       squares[currentPos + index].classList.remove("tetrimino")
     })
   }
+  let timerId;
 
-  timerId = setInterval(moveDown, 700)
+  // timerId = setInterval(moveDown, 700) 
   // assign fucntions to keyCodes
   document.addEventListener('keyup', control)
 
@@ -101,8 +103,10 @@ document.addEventListener("DOMContentLoaded", () => {
       nextRandom = Math.floor(Math.random()*tetriminos.length)
       current = tetriminos[random][currentRotation]
       currentPos = 4;
-      draw()
+      draw();
       displayShape();
+      addScore();
+      gameOver();
     }
   }
 
@@ -131,7 +135,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentRotation === current.length) {
       currentRotation = 0
     }
-    console.log(tetriminos[random])
     current = tetriminos[random][currentRotation]
     draw()
   }
@@ -148,7 +151,6 @@ document.addEventListener("DOMContentLoaded", () => {
     [2, 0, 1, dwidth + 1]
   ]
 
-  console.log(nextTetrimino)
   function displayShape() {
     displaySquare.forEach(square => {
       square.classList.remove('tetrimino')
@@ -157,5 +159,56 @@ document.addEventListener("DOMContentLoaded", () => {
       displaySquare[displayIndex + index].classList.add("tetrimino")
     })
   }
+
+  startButton.addEventListener('click', () =>{
+    if (timerId) {
+      clearInterval(timerId)
+      timerId = null;
+    } else {
+      draw();
+      timerId = setInterval(moveDown, 700)
+      nextRandom = Math.floor(Math.random()*tetriminos.length)
+      displayShape()
+    }
+  } )
+
+  function addScore() {
+    for (let i = 0; i < 199; i+=width) {
+      const row = [i, i+1, i+2, i+3, i+4, i+5, i+6, i+7, i+8, i+9]
+      if(row.every(index => squares[index].classList.contains('taken'))) {
+        console.log("thats a liine")
+        score += 10;
+        scoreDisplay.innerHTML = score
+        row.forEach( index => {
+          squares[index].classList.remove('taken')
+          squares[index].classList.remove('tetrimino')
+        })
+        const squaresRemoved = squares.splice(i, width)
+        squares.unshift(...squaresRemoved)
+        squares.forEach(cell => grid.appendChild(cell))
+      }
+
+    }
+  }
+
+  function gameOver() {
+    if(current.some(index => squares[currentPos + index].classList.contains('taken'))) {
+      scoreDisplay.innerHTML = 'end'
+      clearInterval(timerId)
+      // resetBoard()
+    }
+
+  }
+ 
+  // function resetBoard() {
+  //   squares.forEach (square => {
+  //     square.classList.remove('taken')
+  //     square.classList.remove('tetrimino')
+  //   })
+  // }
+  
+  
+
+    
 
 })
